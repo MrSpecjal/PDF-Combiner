@@ -20,6 +20,7 @@ namespace PDFCombiner
     public partial class PDFCombiner : Form
     {
         public int pdfCount = 0;
+        private List<string> filePaths = new List<string>();
         public PDFCombiner()
         {
             Thread thread = new Thread(new ThreadStart(StartForm));
@@ -32,7 +33,7 @@ namespace PDFCombiner
 
         public void StartForm()
         {
-            Application.Run(new SplashScreen());
+            //Application.Run(new SplashScreen());
         }
 
         public void InitFilesList()
@@ -53,8 +54,9 @@ namespace PDFCombiner
         private void setPath_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Multiselect = true;
             openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            openFileDialog.Title = "Otwóż plik PDF";
+            openFileDialog.Title = "Otwóż plik(i) PDF";
             openFileDialog.Filter = "Pliki PDF (*.pdf)|*.pdf";
             openFileDialog.FilterIndex = 2;
             openFileDialog.RestoreDirectory = true;
@@ -62,8 +64,11 @@ namespace PDFCombiner
             {
                 try
                 {
-                    string path = openFileDialog.FileName;
-                    filePath.Text = path;
+                    foreach (var fileName in openFileDialog.FileNames)
+                    {
+                        filePath.Text += fileName + ";";
+                        filePaths.Add(fileName);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -74,13 +79,19 @@ namespace PDFCombiner
 
         private void addFileToDataGrid_Click(object sender, EventArgs e)
         {
-            if (filePath.Text != null && filePath.Text != "")
+            if (!string.IsNullOrEmpty(filePath.Text))
             {
-                ArrayList row = new ArrayList();
-                row.Add(pdfCount + 1);
-                row.Add(filePath.Text);
-                filesList.Rows.Add(row.ToArray());
-                pdfCount++;
+                foreach (var file in filePaths)
+                {
+                    var row = new ArrayList
+                    {
+                        pdfCount + 1,
+                        file
+                    };
+                    filesList.Rows.Add(row.ToArray());
+                    pdfCount++;
+                }
+                
                 filePath.Text = null;
             }
             else
@@ -131,6 +142,7 @@ namespace PDFCombiner
                         int pages = get_pageCcount(pdfPaths[j]);
 
                         reader = new PdfReader(pdfPaths[j]);
+                        PdfReader.unethicalreading = true;
 
                         for (int i = 1; i <= pages; i++)
                         {
