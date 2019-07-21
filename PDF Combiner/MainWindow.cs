@@ -33,7 +33,7 @@ namespace PDFCombiner
 
         public void StartForm()
         {
-            //Application.Run(new SplashScreen());
+            Application.Run(new SplashScreen());
         }
 
         public void InitFilesList()
